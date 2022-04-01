@@ -1,56 +1,57 @@
 <?php 
+/* 
+crie uma classe chamada blog com as seguintes funcionalidades (metodos:) listagem, inclusao, edicao, exclusao de post
 
-try {
-  $db = new PDO('sqlite:database.sqlite');
-  $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+a conexao com a base de dados pode ser realizada no metodo construtor da classe
 
-  $res = $db->exec(
-    "CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-      title TEXT, 
-      message TEXT, 
-      time INTEGER
-    )"
-  );
-  
-  $stmt = $db->prepare(
-    "INSERT INTO messages (title, message, time) 
-      VALUES (:title, :message, :time)"
-  );
-  
-  // Bind values directly to statement variables
-  $stmt->bindValue(':title', 'message title', SQLITE3_TEXT);
-  $stmt->bindValue(':message', 'message body', SQLITE3_TEXT);
-  
-  // Format unix time to timestamp
-  $formatted_time = date('Y-m-d H:i:s');
-  $stmt->bindValue(':time', $formatted_time, SQLITE3_TEXT);
-   
-  // Execute statement
-  $stmt->execute();
-  
-  $messages = $db->query("SELECT * FROM messages");
+crie um arquivo responsavel por tratar as operacoes e realizar de fato a chamada para cada operacao (metodo) da classe persistente.
+*/
+require 'produto.php';
+
+$produto = new Produto();
+
+switch ($_GET['operacao']) {
+
+  case 'list':
+    echo "<h3>Produtos: </h3>";
+    foreach($produto->list() as $value) {
+       echo "Id: " . $value['id'] . "<br> Descricao: ". $value['desricao'] . "</br>";
+    }
     
-  // Garbage collect db
-  $db = null;
-} catch (PDOException $ex) {
-  echo $ex->getMessage();
+    break;
+  
+  case 'insert':
+    
+    $status = $produto->insert('Produto teste 01');
+
+    if(!$status) {
+      echo "Registro nao realizado";
+      return false;
+    }
+    echo "Registro efetuado com sucesso";
+    
+    break;
+  
+  case 'update':
+    
+    $status = $produto->update('Produto teste atualizado', 1);
+
+    if(!$status) {
+      echo "Registro nao foi atualizado";
+      return false;
+    }
+    echo "Registro atualizado com sucesso";
+    
+    break;
+  
+  case 'delete':
+    $status = $produto->delete(1);
+
+    if(!$status) {
+      echo "Operacao nao realizada";
+      return false;
+    }
+    echo "Registro removido com sucesso";
+    
+    break;
 }
-
-?>
-
-<html>
-  <head>
-    <title>PHP Test</title>
-  </head>
-  <body>
-    <?= '<h1>Messages</h1>'; ?>
-    
-    <?php foreach ($messages as $msg) { 
-      echo '<p>';
-        echo '<h4>' . $msg['title'] . '</h4>';
-        echo $msg['message'];  
-      echo '</p>';
-    } ?>
-  </body>
-</html>
